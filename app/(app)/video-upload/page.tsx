@@ -1,480 +1,81 @@
-// "use client";
-
-// import React, { useState } from "react";
-// import axios from "axios";
-// import { useRouter } from "next/navigation";
-
-// function VideoUpload() {
-//   const [file, setFile] = useState<File | null>(null);
-//   const [title, setTitle] = useState("");
-//   const [description, setDescription] = useState("");
-//   const [isUploading, setIsUploading] = useState(false);
-
-//   const router = useRouter();
-//   //max file size of 60mb
-
-//   const MAX_FILE_SIZE = 70 * 1024 * 1024;
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!file) return;
-
-//     if (file.size > MAX_FILE_SIZE) {
-//       //TODO: add notifications
-//       alert("File size too large");
-//       return;
-//     }
-
-//     setIsUploading(true);
-//     const formData = new FormData();
-//     formData.append("file", file);
-//     formData.append("title", title);
-//     formData.append("description", description);
-//     formData.append("oridinalSize", file.size.toString());
-
-//     try {
-//       const response = await axios.post("/api/video-upload", formData);
-//     } catch (error) {
-//       console.log(error);
-//     } finally {
-//       setIsUploading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="container p-4 mx-auto">
-//       <h1 className="mb-4 text-2xl font-bold">Upload Video</h1>
-//       <form onSubmit={handleSubmit} className="space-y-4">
-//         <div>
-//           <label className="label">
-//             <span className="label-text">Title</span>
-//           </label>
-//           <input
-//             type="text"
-//             value={title}
-//             onChange={(e) => setTitle(e.target.value)}
-//             className="w-full input input-bordered"
-//             required
-//           />
-//         </div>
-//         <div>
-//           <label className="label">
-//             <span className="label-text">Description</span>
-//           </label>
-//           <textarea
-//             value={description}
-//             onChange={(e) => setDescription(e.target.value)}
-//             className="w-full textarea textarea-bordered"
-//           />
-//         </div>
-//         <div>
-//           <label className="label">
-//             <span className="label-text">Video File</span>
-//           </label>
-//           <input
-//             type="file"
-//             accept="video/*"
-//             onChange={(e) => setFile(e.target.files?.[0] || null)}
-//             className="w-full file-input file-input-bordered"
-//             required
-//           />
-//         </div>
-//         <button
-//           type="submit"
-//           className="btn btn-primary"
-//           disabled={isUploading}
-//         >
-//           {isUploading ? "Uploading..." : "Upload Video"}
-//         </button>
-//       </form>
-//     </div>
-//   );
-// }
-
-// export default VideoUpload;
-
-// "use client";
-
-// import React, { useState } from "react";
-// import axios from "axios";
-
-// export default function VideoUpload() {
-//   const [file, setFile] = useState<File | null>(null);
-//   const [title, setTitle] = useState("");
-//   const [description, setDescription] = useState("");
-//   const [isUploading, setIsUploading] = useState(false);
-
-//   const MAX_FILE_SIZE = 70 * 1024 * 1024;
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!file) return;
-
-//     if (file.size > MAX_FILE_SIZE) {
-//       alert("File size too large (max 70MB)");
-//       return;
-//     }
-
-//     setIsUploading(true);
-
-//     const formData = new FormData();
-//     formData.append("file", file);
-//     formData.append("title", title);
-//     formData.append("description", description);
-//     formData.append("originalSize", file.size.toString());
-
-//     try {
-//       await axios.post("/api/video-upload", formData);
-//       setTitle("");
-//       setDescription("");
-//       setFile(null);
-//       alert("Video uploaded successfully");
-//     } catch (error) {
-//       console.error(error);
-//       alert("Upload failed");
-//     } finally {
-//       setIsUploading(false);
-//     }
-//   };
-
-//   return (
-//     <section className="max-w-3xl mx-auto space-y-8">
-//       {/* HEADER */}
-//       <header>
-//         <h1 className="text-3xl font-bold">Upload Video</h1>
-//         <p className="mt-1 text-base-content/70">
-//           Upload and automatically optimize your videos using Cloudinary.
-//         </p>
-//       </header>
-
-//       {/* CARD */}
-//       <div className="shadow-xl card bg-base-200">
-//         <div className="space-y-6 card-body">
-//           <form onSubmit={handleSubmit} className="space-y-5">
-//             {/* TITLE */}
-//             <div className="form-control">
-//               <label className="font-medium label">Title</label>
-//               <input
-//                 type="text"
-//                 className="input input-bordered"
-//                 placeholder="Enter video title"
-//                 value={title}
-//                 onChange={(e) => setTitle(e.target.value)}
-//                 required
-//               />
-//             </div>
-
-//             {/* DESCRIPTION */}
-//             <div className="form-control">
-//               <label className="font-medium label">Description</label>
-//               <textarea
-//                 className="textarea textarea-bordered"
-//                 placeholder="Optional description"
-//                 value={description}
-//                 onChange={(e) => setDescription(e.target.value)}
-//               />
-//             </div>
-
-//             {/* FILE */}
-//             <div className="form-control">
-//               <label className="font-medium label">Video File</label>
-//               <input
-//                 type="file"
-//                 accept="video/*"
-//                 className="file-input file-input-bordered"
-//                 onChange={(e) => setFile(e.target.files?.[0] || null)}
-//                 required
-//               />
-//               <span className="mt-1 text-xs opacity-60">Max size: 70MB</span>
-//             </div>
-
-//             {/* ACTION */}
-//             <div className="flex justify-end pt-4">
-//               <button
-//                 type="submit"
-//                 className="btn btn-primary min-w-[160px]"
-//                 disabled={isUploading}
-//               >
-//                 {isUploading ? (
-//                   <>
-//                     <span className="loading loading-spinner" />
-//                     Uploading…
-//                   </>
-//                 ) : (
-//                   "Upload Video"
-//                 )}
-//               </button>
-//             </div>
-//           </form>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
-// "use client";
-
-// import React, { useState } from "react";
-// import axios from "axios";
-
-// export default function VideoUpload() {
-//   const [file, setFile] = useState<File | null>(null);
-//   const [title, setTitle] = useState("");
-//   const [description, setDescription] = useState("");
-//   const [isUploading, setIsUploading] = useState(false);
-
-//   const MAX_FILE_SIZE = 70 * 1024 * 1024;
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!file) return;
-
-//     if (file.size > MAX_FILE_SIZE) {
-//       alert("File size too large (max 70MB)");
-//       return;
-//     }
-
-//     setIsUploading(true);
-
-//     const formData = new FormData();
-//     formData.append("file", file);
-//     formData.append("title", title);
-//     formData.append("description", description);
-//     formData.append("originalSize", file.size.toString());
-
-//     try {
-//       await axios.post("/api/video-upload", formData);
-//       setTitle("");
-//       setDescription("");
-//       setFile(null);
-//       alert("Video uploaded successfully");
-//     } catch (error) {
-//       console.error(error);
-//       alert("Upload failed");
-//     } finally {
-//       setIsUploading(false);
-//     }
-//   };
-
-//   return (
-//     <section className="max-w-3xl mx-auto space-y-8">
-//       <header>
-//         <h1 className="text-3xl font-bold">Upload Video</h1>
-//         <p className="mt-1 text-base-content/70">
-//           Upload and automatically optimize your videos using Cloudinary.
-//         </p>
-//       </header>
-
-//       <div className="shadow-xl card bg-base-200">
-//         <div className="card-body">
-//           <form onSubmit={handleSubmit} className="space-y-5">
-//             <div className="form-control">
-//               <label className="label">
-//                 <span className="font-medium label-text">Title</span>
-//               </label>
-//               <input
-//                 type="text"
-//                 className="w-full input input-bordered"
-//                 placeholder="Enter video title"
-//                 value={title}
-//                 onChange={(e) => setTitle(e.target.value)}
-//                 required
-//               />
-//             </div>
-
-//             <div className="form-control">
-//               <label className="label">
-//                 <span className="font-medium label-text">Description</span>
-//                 <span className="label-text-alt opacity-60">Optional</span>
-//               </label>
-//               <textarea
-//                 className="w-full textarea textarea-bordered"
-//                 placeholder="Write a short description (optional)"
-//                 value={description}
-//                 onChange={(e) => setDescription(e.target.value)}
-//               />
-//             </div>
-
-//             <div className="form-control">
-//               <label className="label">
-//                 <span className="font-medium label-text">Video File</span>
-//                 <span className="label-text-alt opacity-60">Max 70MB</span>
-//               </label>
-//               <input
-//                 type="file"
-//                 accept="video/*"
-//                 className="w-full file-input file-input-bordered"
-//                 onChange={(e) => setFile(e.target.files?.[0] || null)}
-//                 required
-//               />
-//             </div>
-
-//             <div className="flex justify-end pt-2">
-//               <button
-//                 type="submit"
-//                 className="btn btn-primary min-w-[170px]"
-//                 disabled={isUploading}
-//               >
-//                 {isUploading ? (
-//                   <>
-//                     <span className="loading loading-spinner" />
-//                     Uploading…
-//                   </>
-//                 ) : (
-//                   "Upload Video"
-//                 )}
-//               </button>
-//             </div>
-//           </form>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
-// "use client";
-
-// import React, { useState } from "react";
-// import axios from "axios";
-
-// export default function VideoUpload() {
-//   const [file, setFile] = useState<File | null>(null);
-//   const [title, setTitle] = useState("");
-//   const [description, setDescription] = useState("");
-//   const [isUploading, setIsUploading] = useState(false);
-
-//   const MAX_FILE_SIZE = 70 * 1024 * 1024;
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!file) return;
-
-//     if (file.size > MAX_FILE_SIZE) {
-//       alert("File size too large (max 70MB)");
-//       return;
-//     }
-
-//     setIsUploading(true);
-
-//     const formData = new FormData();
-//     formData.append("file", file);
-//     formData.append("title", title);
-//     formData.append("description", description);
-//     formData.append("originalSize", file.size.toString());
-
-//     try {
-//       await axios.post("/api/video-upload", formData);
-//       setTitle("");
-//       setDescription("");
-//       setFile(null);
-//       alert("Video uploaded successfully");
-//     } catch (error) {
-//       console.error(error);
-//       alert("Upload failed");
-//     } finally {
-//       setIsUploading(false);
-//     }
-//   };
-
-//   return (
-//     <section className="max-w-3xl mx-auto space-y-8">
-//       <header>
-//         <h1 className="text-3xl font-bold">Upload Video</h1>
-//         <p className="mt-1 text-base-content/70">
-//           Upload and automatically optimize your videos using Cloudinary.
-//         </p>
-//       </header>
-
-//       <div className="rounded-2xl border border-white/10 bg-black/30 backdrop-blur shadow-[0_0_80px_rgba(0,0,0,0.45)]">
-//         <div className="p-6 sm:p-8">
-//           <form onSubmit={handleSubmit} className="space-y-5">
-//             <div className="form-control">
-//               <label className="label">
-//                 <span className="font-medium label-text">Title</span>
-//               </label>
-//               <input
-//                 type="text"
-//                 className="w-full input input-bordered bg-white/5 border-white/10"
-//                 placeholder="Enter video title"
-//                 value={title}
-//                 onChange={(e) => setTitle(e.target.value)}
-//                 required
-//               />
-//             </div>
-
-//             <div className="form-control">
-//               <label className="label">
-//                 <span className="font-medium label-text">Description</span>
-//                 <span className="label-text-alt opacity-60">Optional</span>
-//               </label>
-//               <textarea
-//                 className="w-full textarea textarea-bordered bg-white/5 border-white/10"
-//                 placeholder="Write a short description (optional)"
-//                 value={description}
-//                 onChange={(e) => setDescription(e.target.value)}
-//               />
-//             </div>
-
-//             <div className="form-control">
-//               <label className="label">
-//                 <span className="font-medium label-text">Video File</span>
-//                 <span className="label-text-alt opacity-60">Max 70MB</span>
-//               </label>
-//               <input
-//                 type="file"
-//                 accept="video/*"
-//                 className="w-full file-input file-input-bordered bg-white/5 border-white/10"
-//                 onChange={(e) => setFile(e.target.files?.[0] || null)}
-//                 required
-//               />
-//             </div>
-
-//             <div className="pt-2">
-//               <button
-//                 type="submit"
-//                 className="w-full btn btn-primary"
-//                 disabled={isUploading}
-//               >
-//                 {isUploading ? (
-//                   <>
-//                     <span className="loading loading-spinner" />
-//                     Uploading…
-//                   </>
-//                 ) : (
-//                   "Upload Video"
-//                 )}
-//               </button>
-//             </div>
-//           </form>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import axios from "axios";
+import {
+  CloudUpload,
+  FileVideo,
+  X,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
 
 export default function VideoUpload() {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const [notice, setNotice] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const MAX_FILE_SIZE = 70 * 1024 * 1024;
 
+  const fileMeta = useMemo(() => {
+    if (!file) return null;
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    return { name: file.name, sizeMB };
+  }, [file]);
+
+  const pickFile = () => inputRef.current?.click();
+
+  const resetFile = () => {
+    setFile(null);
+    setProgress(0);
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const handleFile = (f: File | null) => {
+    if (!f) return;
+
+    if (f.size > MAX_FILE_SIZE) {
+      setNotice({ type: "error", text: "File size too large (max 70MB)." });
+      return;
+    }
+
+    setNotice(null);
+    setFile(f);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const f = e.dataTransfer.files?.[0];
+    if (f) handleFile(f);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
 
-    if (file.size > MAX_FILE_SIZE) {
-      alert("File size too large (max 70MB)");
+    if (!file) {
+      setNotice({ type: "error", text: "Please select a video file." });
+      return;
+    }
+
+    if (!title.trim()) {
+      setNotice({ type: "error", text: "Please enter a title." });
       return;
     }
 
     setIsUploading(true);
+    setProgress(0);
+    setNotice(null);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -483,14 +84,21 @@ export default function VideoUpload() {
     formData.append("originalSize", file.size.toString());
 
     try {
-      await axios.post("/api/video-upload", formData);
+      await axios.post("/api/video-upload", formData, {
+        onUploadProgress: (evt) => {
+          if (!evt.total) return;
+          const pct = Math.round((evt.loaded / evt.total) * 100);
+          setProgress(pct);
+        },
+      });
+
+      setNotice({ type: "success", text: "Video uploaded successfully." });
       setTitle("");
       setDescription("");
-      setFile(null);
-      alert("Video uploaded successfully");
+      resetFile();
     } catch (error) {
       console.error(error);
-      alert("Upload failed");
+      setNotice({ type: "error", text: "Upload failed. Please try again." });
     } finally {
       setIsUploading(false);
     }
@@ -504,73 +112,178 @@ export default function VideoUpload() {
             Upload Video
           </h1>
           <p className="mt-2 text-white/70">
-            Upload and automatically optimize your videos using Cloudinary.
+            Upload a video and save metadata for previews + compression stats.
           </p>
         </div>
       </header>
 
+      {/* Notice */}
+      {notice && (
+        <div
+          className={[
+            "rounded-2xl border px-4 py-3 backdrop-blur-xl",
+            notice.type === "success"
+              ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-100"
+              : "border-rose-400/20 bg-rose-500/10 text-rose-100",
+          ].join(" ")}
+        >
+          <div className="flex items-start gap-3">
+            {notice.type === "success" ? (
+              <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-300" />
+            ) : (
+              <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-300" />
+            )}
+            <p className="text-sm leading-6">{notice.text}</p>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-[0_0_90px_rgba(0,0,0,0.55)]">
         <div className="p-6 sm:p-10">
-          <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-            {/* Title */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Title</label>
-              </div>
-              <input
-                type="text"
-                className="w-full px-4 py-3 border outline-none rounded-xl border-white/10 bg-black/30 focus:border-white/20 focus:ring-2 focus:ring-white/10"
-                placeholder="Enter video title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Description</label>
-                <span className="text-xs text-white/50">Optional</span>
-              </div>
-              <textarea
-                className="min-h-[110px] w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-white/20 focus:ring-2 focus:ring-white/10"
-                placeholder="Write a short description (optional)"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-
-            {/* File */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Video file</label>
-                <span className="text-xs text-white/50">Max 70MB</span>
+          <form onSubmit={handleSubmit} className="max-w-3xl space-y-8">
+            {/* Title + Description grid */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Title */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white/90">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 transition border outline-none rounded-xl border-white/10 bg-black/30 focus:border-white/20 focus:ring-2 focus:ring-white/10"
+                  placeholder="Eg: YouTube SAAS Demo"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
               </div>
 
-              <input
-                type="file"
-                accept="video/*"
-                className="w-full file-input file-input-bordered bg-black/30 border-white/10"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                required
-              />
+              {/* Description */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-white/90">
+                    Description
+                  </label>
+                  <span className="text-xs text-white/45">Optional</span>
+                </div>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 transition border outline-none rounded-xl border-white/10 bg-black/30 focus:border-white/20 focus:ring-2 focus:ring-white/10"
+                  placeholder="Short one-liner (optional)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full mt-2 btn btn-primary"
-              disabled={isUploading}
-            >
-              {isUploading ? (
-                <>
-                  <span className="loading loading-spinner" />
-                  Uploading…
-                </>
-              ) : (
-                "Upload Video"
-              )}
-            </button>
+            {/* Upload Card */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-white/90">
+                  Video file
+                </label>
+                <span className="text-xs text-white/45">Max 70MB</span>
+              </div>
+
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                className={[
+                  "group relative overflow-hidden rounded-2xl border border-white/10 bg-black/25",
+                  "p-5 sm:p-6",
+                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+                ].join(" ")}
+              >
+                {/* hidden input */}
+                <input
+                  ref={inputRef}
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={(e) => handleFile(e.target.files?.[0] || null)}
+                />
+
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="grid border h-11 w-11 place-items-center rounded-xl border-white/10 bg-white/5">
+                      <FileVideo className="w-5 h-5 text-white/80" />
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-semibold text-white/90">
+                        {fileMeta ? "Selected file" : "Upload a video"}
+                      </p>
+                      <p className="mt-1 text-sm text-white/55">
+                        {fileMeta
+                          ? `${fileMeta.name} • ${fileMeta.sizeMB} MB`
+                          : "Drag & drop here, or click Browse"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {file && (
+                      <button
+                        type="button"
+                        onClick={resetFile}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm transition border rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                      >
+                        <X className="w-4 h-4" />
+                        Remove
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={pickFile}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-black transition bg-white rounded-xl hover:bg-white/90"
+                    >
+                      <CloudUpload className="w-4 h-4" />
+                      Browse
+                    </button>
+                  </div>
+                </div>
+
+                {/* progress bar */}
+                {isUploading && (
+                  <div className="mt-5">
+                    <div className="flex items-center justify-between text-xs text-white/55">
+                      <span>Uploading…</span>
+                      <span>{progress}%</span>
+                    </div>
+                    <div className="w-full h-2 mt-2 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full transition-all rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <button
+                type="submit"
+                disabled={isUploading || !file}
+                className={[
+                  "inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 font-semibold",
+                  "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white",
+                  "shadow-[0_15px_60px_rgba(168,85,247,0.28)]",
+                  "transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60",
+                ].join(" ")}
+              >
+                {isUploading ? (
+                  <>
+                    <span className="loading loading-spinner" />
+                    Uploading…
+                  </>
+                ) : (
+                  "Upload Video"
+                )}
+              </button>
+            </div>
           </form>
         </div>
       </div>
