@@ -140,21 +140,139 @@
 //     </div>
 //   );
 // }
+///////////////////////////////////////////'
+
+// "use client";
+
+// import React, { useState } from "react";
+// import Link from "next/link";
+// import { usePathname, useRouter } from "next/navigation";
+// import { useClerk, useUser } from "@clerk/nextjs";
+// import {
+//   LogOut,
+//   LayoutDashboard,
+//   Share2,
+//   Upload,
+//   Menu,
+//   Sparkles,
+// } from "lucide-react";
+
+// const navItems = [
+//   { href: "/home", icon: LayoutDashboard, label: "Dashboard" },
+//   { href: "/social-share", icon: Share2, label: "Social Media" },
+//   { href: "/video-upload", icon: Upload, label: "Upload Video" },
+// ];
+
+// export default function AppLayout({ children }: { children: React.ReactNode }) {
+//   const [open, setOpen] = useState(false);
+//   const pathname = usePathname();
+//   const { signOut } = useClerk();
+//   const { user } = useUser();
+
+//   return (
+//     <div className="drawer lg:drawer-open bg-base-100">
+//       <input
+//         type="checkbox"
+//         className="drawer-toggle"
+//         checked={open}
+//         onChange={() => setOpen(!open)}
+//       />
+
+//       {/* MAIN CONTENT */}
+//       <div className="flex flex-col drawer-content">
+//         {/* NAVBAR */}
+//         <header className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur">
+//           <div className="px-4 mx-auto navbar max-w-7xl">
+//             <div className="flex-none lg:hidden">
+//               <button className="btn btn-ghost" onClick={() => setOpen(!open)}>
+//                 <Menu />
+//               </button>
+//             </div>
+
+//             <div className="flex-1 gap-2">
+//               <Sparkles className="text-primary" />
+//               <span className="text-lg font-bold">Cloudinary Showcase</span>
+//             </div>
+
+//             {user && (
+//               <div className="flex items-center gap-3">
+//                 <div className="hidden text-right sm:block">
+//                   <p className="text-sm font-medium">
+//                     {user.username || user.emailAddresses[0].emailAddress}
+//                   </p>
+//                 </div>
+//                 <img
+//                   src={user.imageUrl}
+//                   className="rounded-full w-9 h-9"
+//                   alt="avatar"
+//                 />
+//                 <button
+//                   onClick={() => signOut()}
+//                   className="btn btn-ghost btn-circle"
+//                 >
+//                   <LogOut size={18} />
+//                 </button>
+//               </div>
+//             )}
+//           </div>
+//         </header>
+
+//         {/* PAGE */}
+//         <main className="flex-1 w-full px-4 py-6 mx-auto max-w-7xl">
+//           {children}
+//         </main>
+//       </div>
+
+//       {/* SIDEBAR */}
+//       <div className="drawer-side">
+//         <label className="drawer-overlay" onClick={() => setOpen(false)} />
+
+//         <aside className="flex flex-col p-4 w-72 bg-base-200">
+//           <nav className="gap-1 menu">
+//             {navItems.map((item) => {
+//               const active = pathname === item.href;
+//               return (
+//                 <Link
+//                   key={item.href}
+//                   href={item.href}
+//                   className={`flex items-center gap-3 rounded-xl px-4 py-3 transition
+//                     ${
+//                       active
+//                         ? "bg-primary text-primary-content"
+//                         : "hover:bg-base-300"
+//                     }`}
+//                 >
+//                   <item.icon size={20} />
+//                   <span>{item.label}</span>
+//                 </Link>
+//               );
+//             })}
+//           </nav>
+
+//           <div className="pt-4 mt-auto">
+//             <button
+//               onClick={() => signOut()}
+//               className="w-full btn btn-outline btn-error"
+//             >
+//               <LogOut size={18} />
+//               Sign Out
+//             </button>
+//           </div>
+//         </aside>
+//       </div>
+//     </div>
+//   );
+// }
+
+//////////////////////////////////////////////////
 
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
-import {
-  LogOut,
-  LayoutDashboard,
-  Share2,
-  Upload,
-  Menu,
-  Sparkles,
-} from "lucide-react";
+import { LayoutDashboard, Share2, Upload, Menu, LogOut } from "lucide-react";
 
 const navItems = [
   { href: "/home", icon: LayoutDashboard, label: "Dashboard" },
@@ -163,13 +281,13 @@ const navItems = [
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { signOut } = useClerk();
   const { user } = useUser();
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="drawer lg:drawer-open bg-base-100">
+    <div className="drawer lg:drawer-open">
       <input
         type="checkbox"
         className="drawer-toggle"
@@ -177,37 +295,47 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         onChange={() => setOpen(!open)}
       />
 
-      {/* MAIN CONTENT */}
-      <div className="flex flex-col drawer-content">
-        {/* NAVBAR */}
-        <header className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur">
-          <div className="px-4 mx-auto navbar max-w-7xl">
-            <div className="flex-none lg:hidden">
-              <button className="btn btn-ghost" onClick={() => setOpen(!open)}>
-                <Menu />
+      <div className="flex flex-col min-h-screen drawer-content">
+        {/* Topbar */}
+        <header className="sticky top-0 z-30 border-b border-white/10 bg-black/30 backdrop-blur">
+          <div className="flex items-center justify-between px-4 py-3 mx-auto max-w-7xl">
+            <div className="flex items-center gap-3">
+              <button
+                className="btn btn-ghost btn-sm lg:hidden"
+                onClick={() => setOpen(true)}
+              >
+                <Menu size={18} />
               </button>
-            </div>
 
-            <div className="flex-1 gap-2">
-              <Sparkles className="text-primary" />
-              <span className="text-lg font-bold">Cloudinary Showcase</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center border h-9 w-9 rounded-xl bg-white/10 border-white/10">
+                  ✦
+                </div>
+                <div>
+                  <p className="font-bold leading-tight">Cloudinary Showcase</p>
+                  <p className="text-xs opacity-60 -mt-0.5">
+                    Media optimization dashboard
+                  </p>
+                </div>
+              </div>
             </div>
 
             {user && (
               <div className="flex items-center gap-3">
                 <div className="hidden text-right sm:block">
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium leading-tight">
                     {user.username || user.emailAddresses[0].emailAddress}
                   </p>
+                  <p className="text-xs leading-tight opacity-60">Signed in</p>
                 </div>
                 <img
                   src={user.imageUrl}
-                  className="rounded-full w-9 h-9"
+                  className="border rounded-full w-9 h-9 border-white/10"
                   alt="avatar"
                 />
                 <button
+                  className="btn btn-ghost btn-circle btn-sm"
                   onClick={() => signOut()}
-                  className="btn btn-ghost btn-circle"
                 >
                   <LogOut size={18} />
                 </button>
@@ -216,42 +344,52 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {/* PAGE */}
-        <main className="flex-1 w-full px-4 py-6 mx-auto max-w-7xl">
-          {children}
+        {/* Content */}
+        <main className="flex-1">
+          <div className="px-4 py-8 mx-auto max-w-7xl">
+            <div className="rounded-2xl border border-white/10 bg-black/30 backdrop-blur p-6 shadow-[0_0_80px_rgba(0,0,0,0.5)]">
+              {children}
+            </div>
+          </div>
         </main>
       </div>
 
-      {/* SIDEBAR */}
+      {/* Sidebar */}
       <div className="drawer-side">
         <label className="drawer-overlay" onClick={() => setOpen(false)} />
+        <aside className="min-h-screen p-4 border-r w-80 bg-black/40 backdrop-blur border-white/10">
+          <div className="px-2 pt-2 pb-4">
+            <p className="text-xs tracking-wider uppercase opacity-60">
+              Navigation
+            </p>
+          </div>
 
-        <aside className="flex flex-col p-4 w-72 bg-base-200">
-          <nav className="gap-1 menu">
+          <nav className="space-y-1">
             {navItems.map((item) => {
               const active = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 rounded-xl px-4 py-3 transition
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition
                     ${
                       active
-                        ? "bg-primary text-primary-content"
-                        : "hover:bg-base-300"
+                        ? "bg-white/10 border border-white/10"
+                        : "hover:bg-white/5"
                     }`}
                 >
-                  <item.icon size={20} />
-                  <span>{item.label}</span>
+                  <item.icon size={18} className="opacity-90" />
+                  <span className="font-medium">{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="pt-4 mt-auto">
+          <div className="pt-6 mt-6 border-t border-white/10">
             <button
-              onClick={() => signOut()}
               className="w-full btn btn-outline btn-error"
+              onClick={() => signOut()}
             >
               <LogOut size={18} />
               Sign Out
