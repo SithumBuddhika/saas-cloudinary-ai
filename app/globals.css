@@ -1,4 +1,4 @@
-@import "tailwindcss";
+/* @import "tailwindcss";
 
 :root {
   --background: #ffffff;
@@ -47,4 +47,67 @@ body {
       transparent 60%
     ),
     #05060a;
+}
+
+@keyframes meteor {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(215deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate3d(-900px, 900px, 0) rotate(215deg);
+    opacity: 0;
+  }
+} */
+
+@import "tailwindcss";
+
+/* Base theme vars */
+:root {
+  --background: #05060a;
+  --foreground: #ededed;
+}
+
+/* If you still want to respect system theme, keep this.
+   (We’re dark-first anyway) */
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #05060a;
+    --foreground: #171717;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Optional: smoother text rendering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Meteor animation for Meteors component */
+@keyframes meteor {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(215deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate3d(-900px, 900px, 0) rotate(215deg);
+    opacity: 0;
+  }
 }
