@@ -5,6 +5,9 @@ export type Video = {
   publicId: string;
   originalSize: string;
   compressedSize: string;
-  duration: number; // UI expects number
+  duration: number;
   createdAt: string | Date;
+
+  compressedReady: boolean;
+  compressedPublicId?: string | null;
 };
