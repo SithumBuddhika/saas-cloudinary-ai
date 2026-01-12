@@ -10,12 +10,15 @@
 //   RefreshCcw,
 //   Video as VideoIcon,
 //   AlertTriangle,
+//   Trash2,
 // } from "lucide-react";
 
 // export default function Home() {
 //   const [videos, setVideos] = useState<Video[]>([]);
 //   const [loading, setLoading] = useState(true);
 //   const [error, setError] = useState<string | null>(null);
+
+//   const [deletingId, setDeletingId] = useState<string | null>(null);
 
 //   const fetchVideos = useCallback(async () => {
 //     try {
@@ -43,6 +46,30 @@
 //     link.click();
 //     document.body.removeChild(link);
 //   }, []);
+
+//   const handleDelete = useCallback(
+//     async (id: string) => {
+//       if (!confirm("Delete this video? This cannot be undone.")) return;
+
+//       try {
+//         setDeletingId(id);
+
+//         // optimistic remove
+//         setVideos((prev) => prev.filter((v) => v.id !== id));
+
+//         await axios.delete(`/api/videos/${id}`);
+//       } catch (e) {
+//         console.error(e);
+//         alert("Delete failed. Please refresh and try again.");
+//         // fallback: refetch to restore truth
+//         setLoading(true);
+//         fetchVideos();
+//       } finally {
+//         setDeletingId(null);
+//       }
+//     },
+//     [fetchVideos]
+//   );
 
 //   const hasVideos = videos.length > 0;
 
@@ -170,6 +197,8 @@
 //               key={video.id}
 //               video={video}
 //               onDownload={handleDownload}
+//               onDelete={handleDelete}
+//               isDeleting={deletingId === video.id}
 //             />
 //           ))}
 //         </div>
@@ -177,9 +206,16 @@
 //     </section>
 //   );
 // }
+
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import axios from "axios";
 import VideoCard from "@/components/VideoCard";
 import type { Video } from "@/types";
@@ -190,14 +226,27 @@ import {
   Video as VideoIcon,
   AlertTriangle,
   Trash2,
+  Undo2,
+  X,
 } from "lucide-react";
+
+type UndoToast = {
+  id: string;
+  title: string;
+  expiresAt: number; // ms timestamp
+};
 
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  // pending deletes: id -> { video snapshot, timeout }
+  const pendingRef = useRef<
+    Record<string, { video: Video; timeoutId: ReturnType<typeof setTimeout> }>
+  >({});
+
+  const [undoToast, setUndoToast] = useState<UndoToast | null>(null);
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -226,29 +275,60 @@ export default function Home() {
     document.body.removeChild(link);
   }, []);
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      if (!confirm("Delete this video? This cannot be undone.")) return;
+  const startDeleteWithUndo = useCallback(
+    (video: Video) => {
+      // If already pending, ignore
+      if (pendingRef.current[video.id]) return;
 
-      try {
-        setDeletingId(id);
+      // Optimistic remove
+      setVideos((prev) => prev.filter((v) => v.id !== video.id));
 
-        // optimistic remove
-        setVideos((prev) => prev.filter((v) => v.id !== id));
+      // Show toast with 5s expiry
+      const expiresAt = Date.now() + 5000;
+      setUndoToast({ id: video.id, title: video.title, expiresAt });
 
-        await axios.delete(`/api/videos/${id}`);
-      } catch (e) {
-        console.error(e);
-        alert("Delete failed. Please refresh and try again.");
-        // fallback: refetch to restore truth
-        setLoading(true);
-        fetchVideos();
-      } finally {
-        setDeletingId(null);
-      }
+      const timeoutId = setTimeout(async () => {
+        try {
+          await axios.delete(`/api/videos/${video.id}`);
+        } catch (err) {
+          console.error("Delete failed:", err);
+
+          // If backend delete fails, restore video
+          setVideos((prev) => [video, ...prev]);
+
+          setError("Delete failed. The video was restored.");
+        } finally {
+          delete pendingRef.current[video.id];
+
+          // Clear toast only if it’s still the same one
+          setUndoToast((t) => (t?.id === video.id ? null : t));
+        }
+      }, 5000);
+
+      pendingRef.current[video.id] = { video, timeoutId };
     },
-    [fetchVideos]
+    [setVideos]
   );
+
+  const undoDelete = useCallback(() => {
+    const t = undoToast;
+    if (!t) return;
+
+    const pending = pendingRef.current[t.id];
+    if (!pending) {
+      setUndoToast(null);
+      return;
+    }
+
+    clearTimeout(pending.timeoutId);
+    delete pendingRef.current[t.id];
+
+    // Restore video back to top
+    setVideos((prev) => [pending.video, ...prev]);
+    setUndoToast(null);
+  }, [undoToast]);
+
+  const dismissToast = useCallback(() => setUndoToast(null), []);
 
   const hasVideos = videos.length > 0;
 
@@ -311,6 +391,7 @@ export default function Home() {
                   type="button"
                   onClick={() => {
                     setLoading(true);
+                    setError(null);
                     fetchVideos();
                   }}
                   className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold transition border rounded-xl border-red-500/20 bg-white/5 text-white/90 hover:bg-white/10"
@@ -376,10 +457,53 @@ export default function Home() {
               key={video.id}
               video={video}
               onDownload={handleDownload}
-              onDelete={handleDelete}
-              isDeleting={deletingId === video.id}
+              onDelete={() => startDeleteWithUndo(video)}
             />
           ))}
+        </div>
+      )}
+
+      {/* ✅ Undo Toast */}
+      {undoToast && (
+        <div className="fixed bottom-6 left-6 z-50 w-[min(420px,calc(100vw-48px))]">
+          <div className="rounded-2xl border border-white/10 bg-black/55 p-4 backdrop-blur-xl shadow-[0_0_80px_rgba(0,0,0,0.65)]">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5">
+                <Trash2 className="w-5 h-5 text-white/80" />
+              </div>
+
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-white/90">
+                  Video deleted
+                </p>
+                <p className="mt-1 text-xs text-white/60 line-clamp-1">
+                  “{undoToast.title}”
+                </p>
+
+                <div className="flex items-center gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={undoDelete}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-white transition rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:brightness-110"
+                  >
+                    <Undo2 className="h-3.5 w-3.5" />
+                    Undo
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={dismissToast}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold transition border rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Dismiss
+                  </button>
+
+                  <span className="ml-auto text-[11px] text-white/45">5s</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </section>

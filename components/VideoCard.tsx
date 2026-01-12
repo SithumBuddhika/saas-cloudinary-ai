@@ -1,8 +1,8 @@
 // "use client";
 
-// import React, { useCallback, useEffect, useMemo, useState } from "react";
+// import React, { useEffect, useMemo, useState } from "react";
 // import { getCldImageUrl, getCldVideoUrl } from "next-cloudinary";
-// import { Download, Clock, FileDown, FileUp } from "lucide-react";
+// import { Download, Clock, FileDown, FileUp, Trash2 } from "lucide-react";
 // import dayjs from "dayjs";
 // import relativeTime from "dayjs/plugin/relativeTime";
 // import { filesize } from "filesize";
@@ -13,14 +13,20 @@
 // interface VideoCardProps {
 //   video: Video;
 //   onDownload: (url: string, title: string) => void;
+//   onDelete: (id: string) => void;
+//   isDeleting?: boolean;
 // }
 
-// export default function VideoCard({ video, onDownload }: VideoCardProps) {
+// export default function VideoCard({
+//   video,
+//   onDownload,
+//   onDelete,
+//   isDeleting = false,
+// }: VideoCardProps) {
 //   const [isHovered, setIsHovered] = useState(false);
 //   const [previewError, setPreviewError] = useState(false);
 //   const [thumbError, setThumbError] = useState(false);
 
-//   // ✅ Thumbnail: always pick a frame ("so_0") and force jpg output.
 //   const thumbnailUrl = useMemo(() => {
 //     return getCldImageUrl({
 //       src: video.publicId,
@@ -35,8 +41,6 @@
 //     });
 //   }, [video.publicId]);
 
-//   // ✅ Preview: avoid e_preview (often fails on some accounts/plans/inputs).
-//   // Just play first 6 seconds as mp4.
 //   const previewUrl = useMemo(() => {
 //     return getCldVideoUrl({
 //       src: video.publicId,
@@ -48,7 +52,6 @@
 //     });
 //   }, [video.publicId]);
 
-//   // ✅ Full download: optimized mp4 delivery
 //   const fullVideoUrl = useMemo(() => {
 //     return getCldVideoUrl({
 //       src: video.publicId,
@@ -62,7 +65,6 @@
 //   const compressionPercentage = useMemo(() => {
 //     if (!original || !compressed) return 0;
 //     const pct = Math.round((1 - compressed / original) * 100);
-//     // clamp: 0..99 (so we don't show weird 100% or negative)
 //     return Math.max(0, Math.min(99, pct));
 //   }, [original, compressed]);
 
@@ -74,24 +76,39 @@
 //   }, [video.duration]);
 
 //   useEffect(() => {
-//     // when hovering again, retry preview
 //     if (isHovered) setPreviewError(false);
 //   }, [isHovered]);
 
 //   return (
 //     <div
 //       className={[
-//         "group overflow-hidden rounded-3xl",
+//         "group relative overflow-hidden rounded-3xl",
 //         "border border-white/10 bg-white/[0.04] backdrop-blur-xl",
 //         "shadow-[0_0_70px_rgba(0,0,0,0.55)]",
 //         "transition hover:border-white/15 hover:bg-white/[0.06]",
+//         isDeleting ? "opacity-60 pointer-events-none" : "",
 //       ].join(" ")}
 //       onMouseEnter={() => setIsHovered(true)}
 //       onMouseLeave={() => setIsHovered(false)}
 //     >
+//       {/* Top actions */}
+//       <div className="absolute z-10 flex items-center gap-2 top-3 right-3">
+//         <button
+//           type="button"
+//           onClick={() => onDelete(video.id)}
+//           className="inline-flex items-center justify-center w-10 h-10 transition border rounded-2xl border-white/10 bg-black/35 text-white/85 backdrop-blur hover:bg-black/45"
+//           title="Delete"
+//         >
+//           {isDeleting ? (
+//             <span className="loading loading-spinner loading-sm" />
+//           ) : (
+//             <Trash2 className="w-4 h-4" />
+//           )}
+//         </button>
+//       </div>
+
 //       {/* Media */}
 //       <div className="relative aspect-video">
-//         {/* subtle gradient overlay */}
 //         <div className="absolute inset-0 transition opacity-0 pointer-events-none bg-gradient-to-t from-black/35 via-transparent to-transparent group-hover:opacity-100" />
 
 //         {isHovered ? (
@@ -182,7 +199,7 @@
 //           </div>
 //         </div>
 
-//         {/* Footer row */}
+//         {/* Footer */}
 //         <div className="flex items-center justify-between gap-3 mt-4">
 //           <div className="text-sm font-semibold text-white/80">
 //             Compression:{" "}
@@ -223,15 +240,13 @@ dayjs.extend(relativeTime);
 interface VideoCardProps {
   video: Video;
   onDownload: (url: string, title: string) => void;
-  onDelete: (id: string) => void;
-  isDeleting?: boolean;
+  onDelete: () => void;
 }
 
 export default function VideoCard({
   video,
   onDownload,
   onDelete,
-  isDeleting = false,
 }: VideoCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [previewError, setPreviewError] = useState(false);
@@ -292,34 +307,27 @@ export default function VideoCard({
   return (
     <div
       className={[
-        "group relative overflow-hidden rounded-3xl",
+        "group overflow-hidden rounded-3xl",
         "border border-white/10 bg-white/[0.04] backdrop-blur-xl",
         "shadow-[0_0_70px_rgba(0,0,0,0.55)]",
         "transition hover:border-white/15 hover:bg-white/[0.06]",
-        isDeleting ? "opacity-60 pointer-events-none" : "",
       ].join(" ")}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Top actions */}
-      <div className="absolute z-10 flex items-center gap-2 top-3 right-3">
-        <button
-          type="button"
-          onClick={() => onDelete(video.id)}
-          className="inline-flex items-center justify-center w-10 h-10 transition border rounded-2xl border-white/10 bg-black/35 text-white/85 backdrop-blur hover:bg-black/45"
-          title="Delete"
-        >
-          {isDeleting ? (
-            <span className="loading loading-spinner loading-sm" />
-          ) : (
-            <Trash2 className="w-4 h-4" />
-          )}
-        </button>
-      </div>
-
       {/* Media */}
       <div className="relative aspect-video">
         <div className="absolute inset-0 transition opacity-0 pointer-events-none bg-gradient-to-t from-black/35 via-transparent to-transparent group-hover:opacity-100" />
+
+        {/* Delete icon (top-right) */}
+        <button
+          type="button"
+          onClick={onDelete}
+          className="absolute z-10 inline-flex items-center justify-center p-2 transition border right-3 top-3 rounded-xl border-white/10 bg-black/35 text-white/80 backdrop-blur hover:bg-black/50 hover:text-white"
+          title="Delete video"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
 
         {isHovered ? (
           previewError ? (
@@ -357,7 +365,6 @@ export default function VideoCard({
           />
         )}
 
-        {/* Duration pill */}
         <div className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-black/35 px-2.5 py-1 text-xs font-semibold text-white/90 backdrop-blur">
           <Clock className="h-3.5 w-3.5" />
           {durationLabel}
@@ -366,12 +373,12 @@ export default function VideoCard({
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="text-lg font-bold text-white/95 line-clamp-1">
+        <h3 className="text-lg font-bold line-clamp-1 text-white/95">
           {video.title}
         </h3>
 
         {video.description ? (
-          <p className="mt-1 text-sm text-white/60 line-clamp-2">
+          <p className="mt-1 text-sm line-clamp-2 text-white/60">
             {video.description}
           </p>
         ) : (
@@ -382,7 +389,6 @@ export default function VideoCard({
           Uploaded {dayjs(video.createdAt).fromNow()}
         </p>
 
-        {/* Sizes */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="flex items-center gap-3 px-3 py-3 border rounded-2xl border-white/10 bg-white/5">
             <div className="grid border h-9 w-9 place-items-center rounded-xl border-white/10 bg-white/5">
@@ -409,7 +415,6 @@ export default function VideoCard({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between gap-3 mt-4">
           <div className="text-sm font-semibold text-white/80">
             Compression:{" "}
