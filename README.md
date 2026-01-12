@@ -201,7 +201,7 @@ cloudinary-saas/
 └── README.md
 ```
 
-##🗄️ Database Model (Video)
+## 🗄️ Database Model (Video)
 
 ```
 model Video {
