@@ -1,36 +1,281 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ☁️ Cloudinary Showcase
 
-## Getting Started
+### Media Optimization & Social Content Platform
 
-First, run the development server:
+A modern **media optimization SaaS** that allows users to upload videos, compress them automatically in the background, and generate **social-media-ready images** using Cloudinary transformations — all from a secure, production-ready dashboard.
+Built with **Next.js, Prisma, PostgreSQL, Cloudinary, and Clerk**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+> **Notice:**  
+> This project was developed as part of a **Web Development course assignment** to practice and understand **Next.js**, **TypeScript**, and **full-stack development with Appwrite**.  
+> It is intended for **educational and learning purposes** and not for production use.
+> <br>
+
+<p align="center">
+  <img src="./screenshots/sss.png" alt="Landing Page" width="800"/>
+</p>
+
+---
+
+## 🚀 Project Overview
+
+Media files are often uploaded without optimization, causing:
+
+- Slow page loads
+- High bandwidth usage
+- Poor social media presentation
+
+**Cloudinary Showcase** solves this by providing a single platform to:
+
+- Optimize videos automatically
+- Track compression status in real time
+- Generate correctly sized social media images instantly
+
+All processing happens **in the cloud**, making the system scalable and production-ready.
+
+---
+
+## 🌟 Core Benefits
+
+✅ **Automatic video compression**  
+ Reduce file sizes without sacrificing quality.
+
+🖼️ **Social-media-ready images**  
+Generate platform-specific image formats instantly.
+
+⚡ **Performance-optimized assets**  
+Better load times, lower bandwidth costs.
+
+🔐 **Secure multi-user access**  
+Each user’s media is isolated and protected.
+
+📊 **Real-time processing states**  
+Clear UI feedback for upload, compression, and readiness.
+
+☁️ **Scalable SaaS architecture**  
+Designed for real-world cloud workloads.
+
+---
+
+## 🧩 Main Features
+
+### 🔐 Authentication & Security
+
+- Email & password authentication
+- Google OAuth sign-in
+- Protected routes and APIs
+- Session management via Clerk
+
+---
+
+### 🎬 Video Optimization Dashboard
+
+- Upload large video files
+- Store metadata (size, duration)
+- Automatic background compression
+- Track compression status (`Compressing… → Ready`)
+- Download original or compressed videos
+- Delete videos with confirmation
+
+---
+
+<p align="center">
+  <img src="./screenshots//ssss.png" alt="Landing Page" width="800"/>
+</p>
+
+<p align="center">
+  <img src="./screenshots//sssss.png" alt="Landing Page" width="800"/>
+</p>
+
+---
+
+### 🖼️ Social Media Image Creator
+
+Generate social-media-ready images in **one click**.
+
+**Supported capabilities:**
+
+- Upload a single image
+- Choose predefined social presets (e.g. Twitter, Instagram)
+- Automatic resizing & cropping via Cloudinary
+- Instant preview of generated output
+- Download optimized image formats
+
+This ensures:
+
+- Correct aspect ratios
+- No manual editing
+- Platform-optimized visuals
+
+<p align="center">
+  <img src="./screenshots//ssssss.png" alt="Landing Page" width="800"/>
+</p>
+
+---
+
+### 🎨 UI & UX
+
+- Modern Tailwind-based design
+- Loading & processing indicators
+- Confirmation dialogs for destructive actions
+- Fully responsive layout
+- Clean SaaS-style dashboard
+
+---
+
+## 🛠️ Tech Stack
+
+### 🖥️ Frontend
+
+- **Next.js 16 (App Router + Turbopack)**
+- **React**
+- **Tailwind CSS**
+- **Lucide Icons**
+
+### ⚙️ Backend
+
+- **Next.js API Routes**
+- **Prisma ORM**
+- **PostgreSQL**
+
+### ☁️ Media & Processing
+
+- **Cloudinary** (upload, transform, compress, resize)
+
+### 🔑 Authentication
+
+- **Clerk**
+
+---
+
+## 🗂️ Project Structure
+
+```txt
+cloudinary-saas/
+├── app/
+│   ├── (app)/
+│   │   ├── home/                 # Video dashboard
+│   │   ├── social-share/         # Social media image creator
+│   │   └── video-upload/         # Video upload flow
+│   │
+│   ├── (auth)/
+│   │   ├── sign-in/
+│   │   └── sign-up/
+│   │
+│   ├── api/
+│   │   ├── video-upload/         # Video upload endpoint
+│   │   ├── image-upload/         # Image upload & transform
+│   │   └── videos/
+│   │       ├── route.ts          # Fetch user videos
+│   │       └── [id]/compress/    # Compression endpoint
+│   │
+│   ├── layout.tsx
+│   ├── page.tsx
+│   └── globals.css
+│
+├── components/
+│   ├── magic/                    # Visual effects
+│   ├── magicui/
+│   │   ├── VideoCard.tsx
+│   │   ├── ConfirmDialog.tsx
+│   │   └── OrbitingCircles.tsx
+│
+├── lib/
+│   ├── prisma.ts                 # Prisma client
+│   └── utils.ts
+│
+├── prisma/
+│   └── schema.prisma
+│
+├── types/
+│   └── index.ts                  # Shared TypeScript types
+│
+├── public/
+│   └── images & icons
+│
+├── proxy.ts                      # Clerk middleware
+├── next.config.ts
+├── tailwind.config.js
+├── tsconfig.json
+└── README.md
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+##🗄️ Database Model (Video)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+model Video {
+  id                  String   @id @default(cuid())
+  userId              String
+  title               String
+  description         String?
+  publicId            String
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+  originalSize        String
+  compressedSize      String
+  duration            Float
 
-## Learn More
+  compressedReady     Boolean  @default(false)
+  compressedPublicId  String?
 
-To learn more about Next.js, take a look at the following resources:
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+##🔄 Video Compression Flow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1️⃣ User uploads a video
+2️⃣ Video stored in Cloudinary
+3️⃣ DB entry created (compressedReady = false)
+4️⃣ Dashboard detects pending compression
+5️⃣ Compression API runs automatically
+6️⃣ Optimized version generated
+7️⃣ DB updated with compressed metadata
+8️⃣ UI updates to Ready
 
-## Deploy on Vercel
+##🔐 Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Create a .env.local file:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+DATABASE_URL=postgresql://user:password@host:port/db
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_key
+CLERK_SECRET_KEY=your_key
+
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_secret
+```
+
+## ▶️ Getting Started
+
+```
+npm install
+npx prisma generate
+npx prisma migrate dev
+npm run dev
+```
+
+📍 App runs at:
+http://localhost:3000
+
+---
+
+## 💡 Why This Project Matters
+
+- This project demonstrates:
+- Real SaaS architecture
+- Cloud-based media optimization
+- Secure authentication
+- Background processing
+- Clean, state-driven UI
+- Practical Cloudinary usage beyond basic uploads
+
+---
+
+## 🔎 Contact
+
+- Email: [officialsithumbuddhika@gmail.com](mailto:officialsithumbuddhika@gmail.com)
+- LinkedIn: [Sithum Buddhika Jayalal](https://www.linkedin.com/in/sithum-buddhika-jayalal-827860341)
