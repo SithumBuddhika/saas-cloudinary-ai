@@ -36,11 +36,6 @@ export default function AuthLayout({
       {/* Left marketing panel */}
       <div className="flex-col justify-center hidden px-16 lg:flex">
         <div className="max-w-lg">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/70">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            Cloudinary Showcase
-          </div>
-
           <h1 className="mt-6 text-5xl font-bold tracking-tight">
             Media optimization,
             <span className="block text-white/70">done beautifully.</span>
@@ -52,7 +47,8 @@ export default function AuthLayout({
           </p>
 
           <div className="mt-10 text-sm text-white/50">
-            © {new Date().getFullYear()} Cloudinary Showcase
+            © {new Date().getFullYear()} Cloudinary Showcase <br />©{" "}
+            {new Date().getFullYear()} Sithum Buddhika Jayalal
           </div>
         </div>
       </div>
