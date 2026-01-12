@@ -1,149 +1,210 @@
-import React, { useState, useEffect, useCallback } from "react";
+"use client";
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { getCldImageUrl, getCldVideoUrl } from "next-cloudinary";
 import { Download, Clock, FileDown, FileUp } from "lucide-react";
 import dayjs from "dayjs";
-import realtiveTime from "dayjs/plugin/relativeTime";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { filesize } from "filesize";
 import type { Video } from "@/types";
 
-dayjs.extend(realtiveTime);
+dayjs.extend(relativeTime);
 
 interface VideoCardProps {
   video: Video;
   onDownload: (url: string, title: string) => void;
 }
 
-const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
+export default function VideoCard({ video, onDownload }: VideoCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [previewError, setPreviewError] = useState(false);
+  const [thumbError, setThumbError] = useState(false);
 
-  const getThumbnailUrl = useCallback((publicId: string) => {
+  // ✅ Thumbnail: always pick a frame ("so_0") and force jpg output.
+  const thumbnailUrl = useMemo(() => {
     return getCldImageUrl({
-      src: publicId,
-      width: 400,
-      height: 225,
+      src: video.publicId,
+      assetType: "video",
+      width: 640,
+      height: 360,
       crop: "fill",
       gravity: "auto",
       format: "jpg",
       quality: "auto",
-      assetType: "video",
+      rawTransformations: ["so_0", "f_jpg", "q_auto"],
     });
-  }, []);
+  }, [video.publicId]);
 
-  const getFullVideoUrl = useCallback((publicId: string) => {
+  // ✅ Preview: avoid e_preview (often fails on some accounts/plans/inputs).
+  // Just play first 6 seconds as mp4.
+  const previewUrl = useMemo(() => {
     return getCldVideoUrl({
-      src: publicId,
-      width: 1920,
-      height: 1080,
+      src: video.publicId,
+      width: 640,
+      height: 360,
+      crop: "fill",
+      gravity: "auto",
+      rawTransformations: ["so_0", "du_6", "q_auto", "f_mp4"],
     });
-  }, []);
+  }, [video.publicId]);
 
-  const getPreviewVideoUrl = useCallback((publicId: string) => {
+  // ✅ Full download: optimized mp4 delivery
+  const fullVideoUrl = useMemo(() => {
     return getCldVideoUrl({
-      src: publicId,
-      width: 400,
-      height: 225,
-      rawTransformations: ["e_preview:duration_15:max_seg_9:min_seg_dur_1"],
+      src: video.publicId,
+      rawTransformations: ["q_auto", "f_mp4"],
     });
-  }, []);
+  }, [video.publicId]);
 
-  const formatSize = useCallback((size: number) => {
-    return filesize(size);
-  }, []);
+  const original = Number(video.originalSize) || 0;
+  const compressed = Number(video.compressedSize) || 0;
 
-  const formatDuration = useCallback((seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.round(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  }, []);
+  const compressionPercentage = useMemo(() => {
+    if (!original || !compressed) return 0;
+    const pct = Math.round((1 - compressed / original) * 100);
+    // clamp: 0..99 (so we don't show weird 100% or negative)
+    return Math.max(0, Math.min(99, pct));
+  }, [original, compressed]);
 
-  const compressionPercentage = Math.round(
-    (1 - Number(video.compressedSize) / Number(video.originalSize)) * 100
-  );
+  const durationLabel = useMemo(() => {
+    const s = Number(video.duration) || 0;
+    const m = Math.floor(s / 60);
+    const r = Math.round(s % 60);
+    return `${m}:${String(r).padStart(2, "0")}`;
+  }, [video.duration]);
 
   useEffect(() => {
-    setPreviewError(false);
+    // when hovering again, retry preview
+    if (isHovered) setPreviewError(false);
   }, [isHovered]);
-
-  const handlePreviewError = () => {
-    setPreviewError(true);
-  };
 
   return (
     <div
-      className="transition-all duration-300 shadow-xl card bg-base-100 hover:shadow-2xl"
+      className={[
+        "group overflow-hidden rounded-3xl",
+        "border border-white/10 bg-white/[0.04] backdrop-blur-xl",
+        "shadow-[0_0_70px_rgba(0,0,0,0.55)]",
+        "transition hover:border-white/15 hover:bg-white/[0.06]",
+      ].join(" ")}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <figure className="relative aspect-video">
+      {/* Media */}
+      <div className="relative aspect-video">
+        {/* subtle gradient overlay */}
+        <div className="absolute inset-0 transition opacity-0 pointer-events-none bg-gradient-to-t from-black/35 via-transparent to-transparent group-hover:opacity-100" />
+
         {isHovered ? (
           previewError ? (
-            <div className="flex items-center justify-center w-full h-full bg-gray-200">
-              <p className="text-red-500">Preview not available</p>
+            <div className="grid w-full h-full place-items-center bg-black/30">
+              <div className="text-center">
+                <p className="text-sm font-semibold text-white/80">
+                  Preview unavailable
+                </p>
+                <p className="mt-1 text-xs text-white/50">
+                  Try again or download the video.
+                </p>
+              </div>
             </div>
           ) : (
             <video
-              src={getPreviewVideoUrl(video.publicId)}
+              src={previewUrl}
               autoPlay
               muted
               loop
+              playsInline
               className="object-cover w-full h-full"
-              onError={handlePreviewError}
+              onError={() => setPreviewError(true)}
             />
           )
+        ) : thumbError ? (
+          <div className="grid w-full h-full place-items-center bg-black/30">
+            <p className="text-sm text-white/70">Thumbnail unavailable</p>
+          </div>
         ) : (
           <img
-            src={getThumbnailUrl(video.publicId)}
+            src={thumbnailUrl}
             alt={video.title}
             className="object-cover w-full h-full"
+            onError={() => setThumbError(true)}
           />
         )}
-        <div className="absolute flex items-center px-2 py-1 text-sm rounded-lg bottom-2 right-2 bg-base-100 bg-opacity-70">
-          <Clock size={16} className="mr-1" />
-          {formatDuration(video.duration)}
+
+        {/* Duration pill */}
+        <div className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-black/35 px-2.5 py-1 text-xs font-semibold text-white/90 backdrop-blur">
+          <Clock className="h-3.5 w-3.5" />
+          {durationLabel}
         </div>
-      </figure>
-      <div className="p-4 card-body">
-        <h2 className="text-lg font-bold card-title">{video.title}</h2>
-        <p className="mb-4 text-sm text-base-content opacity-70">
-          {video.description}
-        </p>
-        <p className="mb-4 text-sm text-base-content opacity-70">
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        <h3 className="text-lg font-bold text-white/95 line-clamp-1">
+          {video.title}
+        </h3>
+
+        {video.description ? (
+          <p className="mt-1 text-sm text-white/60 line-clamp-2">
+            {video.description}
+          </p>
+        ) : (
+          <p className="mt-1 text-sm text-white/40">No description</p>
+        )}
+
+        <p className="mt-3 text-xs text-white/50">
           Uploaded {dayjs(video.createdAt).fromNow()}
         </p>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center">
-            <FileUp size={18} className="mr-2 text-primary" />
+
+        {/* Sizes */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="flex items-center gap-3 px-3 py-3 border rounded-2xl border-white/10 bg-white/5">
+            <div className="grid border h-9 w-9 place-items-center rounded-xl border-white/10 bg-white/5">
+              <FileUp className="w-4 h-4 text-white/75" />
+            </div>
             <div>
-              <div className="font-semibold">Original</div>
-              <div>{formatSize(Number(video.originalSize))}</div>
+              <p className="text-xs font-semibold text-white/80">Original</p>
+              <p className="text-sm font-bold text-white/90">
+                {filesize(original || 0)}
+              </p>
             </div>
           </div>
-          <div className="flex items-center">
-            <FileDown size={18} className="mr-2 text-secondary" />
+
+          <div className="flex items-center gap-3 px-3 py-3 border rounded-2xl border-white/10 bg-white/5">
+            <div className="grid border h-9 w-9 place-items-center rounded-xl border-white/10 bg-white/5">
+              <FileDown className="w-4 h-4 text-white/75" />
+            </div>
             <div>
-              <div className="font-semibold">Compressed</div>
-              <div>{formatSize(Number(video.compressedSize))}</div>
+              <p className="text-xs font-semibold text-white/80">Compressed</p>
+              <p className="text-sm font-bold text-white/90">
+                {filesize(compressed || 0)}
+              </p>
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm font-semibold">
+
+        {/* Footer row */}
+        <div className="flex items-center justify-between gap-3 mt-4">
+          <div className="text-sm font-semibold text-white/80">
             Compression:{" "}
-            <span className="text-accent">{compressionPercentage}%</span>
+            <span className="text-white/95">{compressionPercentage}%</span>
           </div>
+
           <button
-            className="btn btn-primary btn-sm"
-            onClick={() =>
-              onDownload(getFullVideoUrl(video.publicId), video.title)
-            }
+            type="button"
+            onClick={() => onDownload(fullVideoUrl, video.title)}
+            className={[
+              "inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold",
+              "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white",
+              "shadow-[0_0_30px_rgba(168,85,247,0.25)]",
+              "transition hover:brightness-110",
+            ].join(" ")}
+            title="Download optimized MP4"
           >
-            <Download size={16} />
+            <Download className="w-4 h-4" />
+            Download
           </button>
         </div>
       </div>
     </div>
   );
-};
-
-export default VideoCard;
+}
