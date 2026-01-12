@@ -223,18 +223,18 @@ model Video {
 }
 ```
 
-##🔄 Video Compression Flow
+## 🔄 Video Compression Flow
 
-1️⃣ User uploads a video
-2️⃣ Video stored in Cloudinary
-3️⃣ DB entry created (compressedReady = false)
-4️⃣ Dashboard detects pending compression
-5️⃣ Compression API runs automatically
-6️⃣ Optimized version generated
-7️⃣ DB updated with compressed metadata
-8️⃣ UI updates to Ready
+1. User uploads a video
+2. Video stored in Cloudinary
+3. DB entry created (compressedReady = false)
+4. Dashboard detects pending compression
+5. Compression API runs automatically
+6. Optimized version generated
+7. DB updated with compressed metadata
+8. UI updates to Ready
 
-##🔐 Environment Variables
+## 🔐 Environment Variables
 
 Create a .env.local file:
 
