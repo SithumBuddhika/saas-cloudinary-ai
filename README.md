@@ -8,7 +8,7 @@ Built with **Next.js, Prisma, PostgreSQL, Cloudinary, and Clerk**.
 ---
 
 > **Notice:**  
-> This project was developed as part of a **Web Development course assignment** to practice and understand **Next.js**, **TypeScript**, and **full-stack development with Appwrite**.  
+> This project was developed as part of a **Web Development course assignment** to practice and understand **Next.js**, **TypeScript**, and **full-stack development with Prisma, Clerk, Cloudinary**.  
 > It is intended for **educational and learning purposes** and not for production use.
 > <br>
 
