@@ -188,6 +188,8 @@
 
 ///////////////////
 
+//! Mobile Responsive Update
+
 "use client";
 
 import React, { useState } from "react";
